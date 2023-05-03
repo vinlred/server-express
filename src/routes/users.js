@@ -26,7 +26,6 @@ router.post("/register", async (req, res) => {
       });
     } else {
       const hashedPass = await hashed(password);
-      console.log(hashedPass);
       const newUser = await pool.query(
         "INSERT INTO users (uname, pass, fname, lname, gender, date_of_birth) VALUES($1, $2, $3, $4, $5, $6)",
         [username, hashedPass, firstname, lastname, gender, birthdate]
@@ -52,8 +51,7 @@ router.use((req, res, next) => {
 router.get("/", async (req, res) => {
   try {
     const { id } = req.query;
-    console.log(id);
-    if (!isNaN(id)) {
+    if (id) {
       const parsedId = parseInt(id);
       if (!isNaN(parsedId)) {
         const filteredUsers = await pool.query(
@@ -67,7 +65,7 @@ router.get("/", async (req, res) => {
       } else res.send("Invalid User ID");
     } else {
       const allUsers = await pool.query("SELECT * FROM users");
-      res.send(allUsers.row[0]);
+      res.send(allUsers.rows);
     }
   } catch (err) {
     console.error(err.message);

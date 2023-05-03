@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
         req.session.user = {
           username,
         };
-        req.session.cookie.maxAge = 3600000;
+        req.session.cookie.maxAge = 3600000 * 24;
         // res.send(req.session);
         res.status(202).json({ message: "Logged In" });
       }
@@ -41,6 +41,16 @@ router.post("/login", async (req, res) => {
     }
   } catch (err) {
     console.error(err.message);
+  }
+});
+
+router.use((req, res, next) => {
+  if (req.session.user) {
+    console.log("logged in");
+    next();
+  } else {
+    console.log("not logged in");
+    res.status(401).json({ message: "You don't have access to this feature" });
   }
 });
 

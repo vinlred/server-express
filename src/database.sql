@@ -11,7 +11,8 @@ CREATE TABLE users(
 );
 
 CREATE TABLE messages(
+    mid SERIAL PRIMARY KEY,
     uname VARCHAR (50),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     messages VARCHAR (255)
-)
+);
