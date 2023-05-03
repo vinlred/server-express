@@ -52,8 +52,9 @@ router.use((req, res, next) => {
 router.get("/", async (req, res) => {
   try {
     const { id } = req.query;
-    const parsedId = parseInt(id);
-    if (id) {
+    console.log(id);
+    if (!isNaN(id)) {
+      const parsedId = parseInt(id);
       if (!isNaN(parsedId)) {
         const filteredUsers = await pool.query(
           "SELECT * FROM users WHERE uid = $1",
@@ -62,7 +63,7 @@ router.get("/", async (req, res) => {
         // const filteredUsers = userList.filter((u) => u.id == parsedId);
         if (!isObjEmpty(filteredUsers)) {
           res.send(filteredUsers.rows[0]);
-        } else res.sendStatus(404);
+        } else res.sendStatus(404).json({ message: "No User with that ID" });
       } else res.send("Invalid User ID");
     } else {
       const allUsers = await pool.query("SELECT * FROM users");

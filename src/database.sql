@@ -12,6 +12,6 @@ CREATE TABLE users(
 
 CREATE TABLE messages(
     uname VARCHAR (50),
-    postTime TIMESTAMP,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     messages VARCHAR (255)
 )
