@@ -21,10 +21,11 @@ router.get("/", (req, res) => {
 
 router.post("/write", async (req, res) => {
   try {
-    const { username, message, timestamp } = req.body;
+    const { message } = req.body;
+    const { username } = req.session.user;
     const newMessage = await pool.query(
-      "INSERT INTO users (uname, messages, postTime) VALUES($1, $2, $3)",
-      [username, message, timestamp]
+      "INSERT INTO messages (uname, messages) VALUES($1, $2)",
+      [username, message]
     );
     res.status(201).json({ message: "Post has been created successfully" });
   } catch (err) {
