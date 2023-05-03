@@ -4,6 +4,13 @@ const router = Router();
 
 const pool = require("./db");
 
+// Get all message API
+router.get("/", async (req, res) => {
+  const allMessages = await pool.query("SELECT * FROM messages");
+  res.send(allMessages.rows);
+});
+
+// Check for login session
 router.use((req, res, next) => {
   if (req.session.user) {
     console.log("logged in");
@@ -14,11 +21,7 @@ router.use((req, res, next) => {
   }
 });
 
-router.get("/", (req, res) => {
-  console.log(req.session.user);
-  res.status(200).json({ message: "You have access to post" });
-});
-
+// Post Message API
 router.post("/write", async (req, res) => {
   try {
     const { message } = req.body;

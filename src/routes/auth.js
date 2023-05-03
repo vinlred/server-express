@@ -6,6 +6,7 @@ const pool = require("./db");
 
 var bcrypt = require("bcrypt");
 
+// Login API
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -44,6 +45,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Check for login session
 router.use((req, res, next) => {
   if (req.session.user) {
     console.log("logged in");
@@ -52,6 +54,13 @@ router.use((req, res, next) => {
     console.log("not logged in");
     res.status(401).json({ message: "You don't have access to this feature" });
   }
+});
+
+// LogOut API
+router.get("/logout", (req, res) => {
+  req.session.destroy();
+  req.session = null;
+  res.status(200).json({ message: "You have successfully log out" });
 });
 
 module.exports = router;

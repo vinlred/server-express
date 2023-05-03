@@ -11,6 +11,7 @@ var bcrypt = require("bcrypt");
 //   res.send(201);
 // });
 
+// Register API
 router.post("/register", async (req, res) => {
   try {
     const { username, firstname, lastname, gender, birthdate, password } =
@@ -38,6 +39,7 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// Check for Login Session
 router.use((req, res, next) => {
   if (req.session.user) {
     console.log("logged in");
@@ -48,6 +50,7 @@ router.use((req, res, next) => {
   }
 });
 
+// Get all Users or Process Query "/api/users?id=N, N is id number on DB"
 router.get("/", async (req, res) => {
   try {
     const { id } = req.query;
@@ -55,7 +58,7 @@ router.get("/", async (req, res) => {
       const parsedId = parseInt(id);
       if (!isNaN(parsedId)) {
         const filteredUsers = await pool.query(
-          "SELECT * FROM users WHERE uid = $1",
+          "SELECT uid, uname, fname, lname, gender, date_of_birth FROM users WHERE uid = $1",
           [parsedId]
         );
         // const filteredUsers = userList.filter((u) => u.id == parsedId);
@@ -64,7 +67,9 @@ router.get("/", async (req, res) => {
         } else res.sendStatus(404).json({ message: "No User with that ID" });
       } else res.send("Invalid User ID");
     } else {
-      const allUsers = await pool.query("SELECT * FROM users");
+      const allUsers = await pool.query(
+        "SELECT uid, uname, fname, lname, gender, date_of_birth FROM users"
+      );
       res.send(allUsers.rows);
     }
   } catch (err) {
@@ -72,21 +77,26 @@ router.get("/", async (req, res) => {
   }
 });
 
+// Get user based on username
 router.get("/:userid", async (req, res) => {
   console.log("this is for accessing user page");
   const username = req.params;
   // console.log(username.userid);
   // const uid = userList.find((u) => u.user === userid);
-  const curuser = await pool.query("SELECT * FROM users WHERE uname = $1", [
-    username.userid,
-  ]);
+  const curuser = await pool.query(
+    "SELECT uid, uname, fname, lname, gender, date_of_birth FROM users WHERE uname = $1",
+    [username.userid]
+  );
   res.send(curuser.rows[0]);
 });
 
+// Extra function
+// Check null
 function isObjEmpty(obj) {
   return Object.keys(obj).length === 0;
 }
 
+// Hashing function
 async function hashed(password) {
   const saltRounds = bcrypt.genSaltSync();
   const hash = await bcrypt.hash(password, saltRounds);

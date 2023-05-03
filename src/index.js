@@ -24,17 +24,19 @@ app.use(
   })
 );
 
-app.use((req, res, next) => {
-  console.log(req.url);
-  next();
-});
+// app.use((req, res, next) => {
+//   console.log(req.url);
+//   next();
+// });
 
 app.use("/api/users", usersRoute);
 app.use("/api/posts", postsRoute);
 app.use("/api/auth", authsRoute);
 
+// redirect to home page, shows all posts
 app.get("/", (req, res) => {
-  res.send("owob home page");
+  // res.send("owob home page");
+  res.redirect("/api/posts");
 });
 
 app.listen(PORT, () => {
