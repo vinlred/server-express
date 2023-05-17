@@ -46,8 +46,14 @@ router.use((req, res, next) => {
     next();
   } else {
     console.log("not logged in");
-    res.status(401).json({ message: "You don't have access to this feature" });
+    res
+      .status(401)
+      .json({ message: "You don't have access to this feature, Please login" });
   }
+});
+
+router.post("/", (req, res) => {
+  res.status(200).json({ message: "To create a post, go to /api/posts/write" });
 });
 
 // Get all Users or Process Query "/api/users?id=N, N is id number on DB"
