@@ -25,20 +25,20 @@ router.post('/login', async (req, res) => {
     if (matchCheck) {
       console.log('Matches, Logged In');
       if (req.session.user) {
-        res
+        return res
           .status(401)
           .json({ message: 'There is already an account logged in' });
       } else {
         req.session.user = {
           username,
         };
-        req.session.cookie.maxAge = 3600000 * 24;
+        req.session.cookie.maxAge = 3600000 * 5;
         // res.send(req.session);
-        res.status(202).json({ message: 'Logged In' });
+        return res.status(202).json({ message: 'Logged In' });
       }
     } else {
       console.log('Nope');
-      res.status(401).json({ message: 'Wrong Password' });
+      return res.status(401).json({ message: 'Wrong Password' });
     }
   } catch (err) {
     console.error(err.message);
@@ -52,19 +52,17 @@ router.use((req, res, next) => {
     next();
   } else {
     console.log('not logged in');
-    res.status(401).json({ message: "You don't have access to this feature" });
+    return res
+      .status(401)
+      .json({ message: "You don't have access to this feature" });
   }
 });
 
 // LogOut API
 router.get('/logout', (req, res) => {
-  try {
-    req.session.destroy();
-    req.session = null;
-    res.status(200).json({ message: 'You have successfully log out' });
-  } catch (error) {
-    res.status(401).json({ message: "You don't have access to this feature" });
-  }
+  req.session.destroy();
+  req.session = null;
+  return res.status(200).json({ message: 'You have successfully log out' });
 });
 
 module.exports = router;
