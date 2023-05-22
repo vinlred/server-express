@@ -1,44 +1,44 @@
-const { Router, request } = require("express");
+const { Router, request } = require('express');
 
 const router = Router();
 
-const pool = require("./db");
+const pool = require('./db');
 
-var bcrypt = require("bcrypt");
+var bcrypt = require('bcrypt');
 
 // Login API
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
-    const checkUser = await pool.query("SELECT * FROM users WHERE uname = $1", [
+    const checkUser = await pool.query('SELECT * FROM users WHERE uname = $1', [
       username,
     ]);
     if (checkUser.rows.length == 0) {
-      return res.status(400).json({ error: "Username Not Found" });
+      return res.status(400).json({ error: 'Username Not Found' });
     }
     console.log(`Username: ${username} Found`);
-    const dbPass = await pool.query("SELECT pass FROM users where uname = $1", [
+    const dbPass = await pool.query('SELECT pass FROM users where uname = $1', [
       username,
     ]);
     const hashedPass = dbPass.rows[0].pass;
     const matchCheck = await bcrypt.compare(password, hashedPass);
     if (matchCheck) {
-      console.log("Matches, Logged In");
+      console.log('Matches, Logged In');
       if (req.session.user) {
         res
           .status(401)
-          .json({ message: "There is already an account logged in" });
+          .json({ message: 'There is already an account logged in' });
       } else {
         req.session.user = {
           username,
         };
         req.session.cookie.maxAge = 3600000 * 24;
         // res.send(req.session);
-        res.status(202).json({ message: "Logged In" });
+        res.status(202).json({ message: 'Logged In' });
       }
     } else {
-      console.log("Nope");
-      res.status(401).json({ message: "Wrong Password" });
+      console.log('Nope');
+      res.status(401).json({ message: 'Wrong Password' });
     }
   } catch (err) {
     console.error(err.message);
@@ -48,19 +48,23 @@ router.post("/login", async (req, res) => {
 // Check for login session
 router.use((req, res, next) => {
   if (req.session.user) {
-    console.log("logged in");
+    console.log('logged in');
     next();
   } else {
-    console.log("not logged in");
+    console.log('not logged in');
     res.status(401).json({ message: "You don't have access to this feature" });
   }
 });
 
 // LogOut API
-router.get("/logout", (req, res) => {
-  req.session.destroy();
-  req.session = null;
-  res.status(200).json({ message: "You have successfully log out" });
+router.get('/logout', (req, res) => {
+  try {
+    req.session.destroy();
+    req.session = null;
+    res.status(200).json({ message: 'You have successfully log out' });
+  } catch (error) {
+    res.status(401).json({ message: "You don't have access to this feature" });
+  }
 });
 
 module.exports = router;

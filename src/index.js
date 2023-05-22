@@ -1,12 +1,12 @@
-const express = require("express");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
-const session = require("express-session");
+const express = require('express');
+const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
 
-const pool = require("./db");
-const usersRoute = require("./routes/users");
-const postsRoute = require("./routes/posts");
-const authsRoute = require("./routes/auth");
+const pool = require('./db');
+const usersRoute = require('./routes/users');
+const postsRoute = require('./routes/posts');
+const authsRoute = require('./routes/auth');
 
 const app = express();
 const PORT = 8080;
@@ -29,14 +29,14 @@ app.use(
 //   next();
 // });
 
-app.use("/api/users", usersRoute);
-app.use("/api/posts", postsRoute);
-app.use("/api/auth", authsRoute);
+app.use('/api/users', usersRoute);
+app.use('/api/posts', postsRoute);
+app.use('/api/auth', authsRoute);
 
 // redirect to home page, shows all posts
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
   // res.send("owob home page");
-  res.redirect("/api/posts");
+  res.redirect('/api/posts');
 });
 
 app.listen(PORT, () => {
