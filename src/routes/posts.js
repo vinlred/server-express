@@ -26,6 +26,35 @@ router.use((req, res, next) => {
   }
 });
 
+// Get all of user's messages by user session
+router.get("/mine", async (req, res) => {
+  try {
+    const { username } = req.session.user;
+    const allMessages = await pool.query(
+      "SELECT * FROM messages WHERE uname=$1 AND deleted = FALSE AND edited = FALSE",
+      [username]
+    );
+    res.send(allMessages.rows);
+    // res.status(201).json({ message: 'Post has been created successfully' });
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
+router.get("/reply/mine", async (req, res) => {
+  try {
+    const { username } = req.session.user;
+    console.log(username);
+    const currep = await pool.query(
+      "SELECT repid, mid, uname, created_at, messages FROM replies WHERE uname = $1 AND deleted = FALSE",
+      [username]
+    );
+    res.send(currep.rows);
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 // Post Message API
 router.post("/write", async (req, res) => {
   try {
@@ -66,6 +95,21 @@ router.post("/reply/:mid", async (req, res) => {
   } catch (err) {
     console.log(err.message);
   }
+});
+
+router.get("/reply/:uname", async (req, res) => {
+  const { uname } = req.params;
+  const cekuser = await pool.query("SELECT * FROM users WHERE uname = $1", [
+    uname,
+  ]);
+  if (cekuser.rows.length == 0) {
+    return res.status(403).json({ message: "User does not exist" });
+  }
+  const currep = await pool.query(
+    "SELECT repid, mid, uname, created_at, messages FROM replies WHERE uname = $1 AND deleted = FALSE",
+    [uname]
+  );
+  res.send(currep.rows);
 });
 
 router.get("/delete/:mid", async (req, res) => {
@@ -156,4 +200,5 @@ router.post("/edit/:mid", async (req, res) => {
     console.log(err.message);
   }
 });
+
 module.exports = router;
