@@ -105,7 +105,7 @@ router.get("/:userid", async (req, res) => {
     [username.userid]
   );
   const curmes = await pool.query(
-    "SELECT mid, created_at, messages FROM messages WHERE uname = $1",
+    "SELECT mid, created_at, messages FROM messages WHERE uname = $1 AND deleted = FALSE",
     [username.userid]
   );
   // res.send(curuser.rows[0]);

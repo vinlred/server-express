@@ -46,8 +46,7 @@ router.post("/reply/:mid", async (req, res) => {
       "SELECT messages, deleted FROM messages WHERE mid = $1",
       [mid]
     );
-    // console.log(checkmes.rows[0].deleted);
-    if (checkmes.rows.length == 0 || checkmes.rows[0].deleted) {
+    if (checkmes.rows.length == 0) {
       console.log("error in replying");
       return res.status(401).json({ message: "Unauthorized" });
     }
@@ -71,8 +70,6 @@ router.get("/delete/:mid", async (req, res) => {
       "SELECT uname, deleted FROM messages WHERE mid = $1",
       [mid]
     );
-    console.log(muser.rows[0].uname);
-    console.log(req.session.user.username);
     if (muser.rows.length == 0 || muser.rows[0].deleted) {
       return res.status(401).json({ message: "Unauthorized" });
     }
