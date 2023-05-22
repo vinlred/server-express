@@ -8,7 +8,7 @@ const session = require("express-session");
 // Get all message API
 router.get("/", async (req, res) => {
   const allMessages = await pool.query(
-    "SELECT * FROM messages WHERE deleted = NULL"
+    "SELECT * FROM messages WHERE deleted = FALSE"
   );
   res.send(allMessages.rows);
 });
