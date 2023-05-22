@@ -14,25 +14,31 @@ var bcrypt = require("bcrypt");
 // Register API
 router.post("/register", async (req, res) => {
   try {
-    const { username, firstname, lastname, gender, birthdate, password } =
-      req.body;
-    // console.log(username, firstname, lastname, gender, birthdate, password);
-    const checkPrev = await pool.query(`SELECT * FROM users WHERE uname = $1`, [
-      username,
-    ]);
-
-    if (checkPrev.rows.length != 0) {
-      return res.status(400).json({
-        error: "Username already exist",
-      });
+    if (req.session.user) {
+      res.status(401).json({ message: "You are already logged in" });
     } else {
-      const hashedPass = await hashed(password);
-      const newUser = await pool.query(
-        "INSERT INTO users (uname, pass, fname, lname, gender, date_of_birth) VALUES($1, $2, $3, $4, $5, $6)",
-        [username, hashedPass, firstname, lastname, gender, birthdate]
+      console.log("Registering New User");
+      const { username, firstname, lastname, gender, birthdate, password } =
+        req.body;
+      // console.log(username, firstname, lastname, gender, birthdate, password);
+      const checkPrev = await pool.query(
+        `SELECT * FROM users WHERE uname = $1`,
+        [username]
       );
-      res.status(201).json({ message: "User Created Successfully" });
-      // res.sendStatus(201);
+
+      if (checkPrev.rows.length != 0) {
+        return res.status(400).json({
+          error: "Username already exist",
+        });
+      } else {
+        const hashedPass = await hashed(password);
+        const newUser = await pool.query(
+          "INSERT INTO users (uname, pass, fname, lname, gender, date_of_birth) VALUES($1, $2, $3, $4, $5, $6)",
+          [username, hashedPass, firstname, lastname, gender, birthdate]
+        );
+        res.status(201).json({ message: "User Created Successfully" });
+        // res.sendStatus(201);
+      }
     }
   } catch (err) {
     console.error(err.message);
@@ -93,7 +99,13 @@ router.get("/:userid", async (req, res) => {
     "SELECT uid, uname, fname, lname, gender, date_of_birth FROM users WHERE uname = $1",
     [username.userid]
   );
-  res.send(curuser.rows[0]);
+  const curmes = await pool.query(
+    "SELECT mid, created_at, messages FROM messages WHERE uname = $1",
+    [username.userid]
+  );
+  // res.send(curuser.rows[0]);
+  // res.send(curmes.rows[0]);
+  res.json({ user: curuser.rows[0], message: curmes.rows });
 });
 
 // Extra function
@@ -106,13 +118,6 @@ function isObjEmpty(obj) {
 async function hashed(password) {
   const saltRounds = bcrypt.genSaltSync();
   const hash = await bcrypt.hash(password, saltRounds);
-  // const matchCheck = await bcrypt.compare(password, hash);
-  console.log(hash);
-  // if (matchCheck) {
-  //   console.log("Matches");
-  // } else {
-  //   console.log("Nope");
-  // }
   return hash;
 }
 
