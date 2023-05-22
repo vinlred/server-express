@@ -94,7 +94,12 @@ router.get("/:userid", async (req, res) => {
   console.log("this is for accessing user page");
   const username = req.params;
   // console.log(username.userid);
-  // const uid = userList.find((u) => u.user === userid);
+  const cekuser = await pool.query("SELECT * FROM users WHERE uname = $1", [
+    username.userid,
+  ]);
+  if (cekuser.rows.length == 0) {
+    return res.status(403).json({ message: "User does not exist" });
+  }
   const curuser = await pool.query(
     "SELECT uid, uname, fname, lname, gender, date_of_birth FROM users WHERE uname = $1",
     [username.userid]

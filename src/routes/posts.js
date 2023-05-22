@@ -43,22 +43,21 @@ router.post("/reply/:mid", async (req, res) => {
   try {
     const { mid } = req.params;
     const checkmes = await pool.query(
-      "SELECT messages FROM messages WHERE mid = $1",
+      "SELECT messages, deleted FROM messages WHERE mid = $1",
       [mid]
     );
-    console.log(checkmes.rows[0]);
-    if (checkmes.rows[0]) {
-      const { message } = req.body;
-      const { username } = req.session.user;
-      await pool.query(
-        "INSERT INTO replies (mid, uname, messages, deleted) VALUES($1, $2, $3, FALSE)",
-        [mid, username, message]
-      );
-      res.status(201).json({ message: "Reply has been created successfully" });
-    } else {
-      res.status(403).json({ message: "Post does not exist" });
-      err;
+    // console.log(checkmes.rows[0].deleted);
+    if (checkmes.rows.length == 0 || checkmes.rows[0].deleted) {
+      console.log("error in replying");
+      return res.status(401).json({ message: "Unauthorized" });
     }
+    const { message } = req.body;
+    const { username } = req.session.user;
+    await pool.query(
+      "INSERT INTO replies (mid, uname, messages, deleted) VALUES($1, $2, $3, FALSE)",
+      [mid, username, message]
+    );
+    res.status(201).json({ message: "Reply has been created successfully" });
   } catch (err) {
     console.log(err.message);
   }
@@ -69,11 +68,14 @@ router.get("/delete/:mid", async (req, res) => {
     const { mid } = req.params;
     console.log(mid);
     const muser = await pool.query(
-      "SELECT uname FROM messages WHERE mid = $1",
+      "SELECT uname, deleted FROM messages WHERE mid = $1",
       [mid]
     );
     console.log(muser.rows[0].uname);
     console.log(req.session.user.username);
+    if (muser.rows.length == 0 || muser.rows[0].deleted) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
     if (req.session.user.username != muser.rows[0].uname) {
       res.status(401).json({ message: "Unauthorized" });
     } else {
