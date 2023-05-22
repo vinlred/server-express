@@ -19,3 +19,12 @@ CREATE TABLE messages(
     edited BOOLEAN,
     newmid INTEGER
 );
+
+CREATE TABLE replies(
+    repid SERIAL PRIMARY KEY,
+    mid INTEGER,
+    uname VARCHAR (50),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    messages VARCHAR (255),
+    deleted BOOLEAN
+);
