@@ -41,6 +41,30 @@ router.get("/mine", async (req, res) => {
   }
 });
 
+router.get("/:mid", async (req, res) => {
+  try {
+    const { mid } = req.params;
+    const checkmes = await pool.query("SELECT * FROM messages WHERE mid = $1", [
+      mid,
+    ]);
+    if (checkmes.rows.length == 0) {
+      console.log("Posts not found");
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+    const curmes = await pool.query(
+      "SELECT uname, created_at, messages FROM messages WHERE mid = $1 AND deleted = FALSE AND edited = FALSE",
+      [mid]
+    );
+    const currep = await pool.query(
+      "SELECT repid, uname, created_at, messages FROM replies WHERE mid = $1 AND deleted = FALSE",
+      [mid]
+    );
+    res.json({ message: curmes.rows, replies: currep.rows });
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 router.get("/reply/mine", async (req, res) => {
   try {
     const { username } = req.session.user;
@@ -76,7 +100,7 @@ router.post("/reply/:mid", async (req, res) => {
   try {
     const { mid } = req.params;
     const checkmes = await pool.query(
-      "SELECT messages, deleted FROM messages WHERE mid = $1",
+      "SELECT messages FROM messages WHERE mid = $1 AND deleted = FALSE AND edited = FALSE",
       [mid]
     );
     if (checkmes.rows.length == 0) {
@@ -181,7 +205,7 @@ router.post("/edit/:mid", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     } else {
       await pool.query(
-        "INSERT INTO messages (uname, created_at, messages, edited, newmid) VALUES($1, $2, $3, TRUE, $4)",
+        "INSERT INTO messages (uname, created_at, messages, edited, deleted, newmid) VALUES($1, $2, $3, TRUE, FALSE, $4)",
         [
           muser.rows[0].uname,
           muser.rows[0].created_at,
