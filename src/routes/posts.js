@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
   const allMessages = await pool.query(
     "SELECT * FROM messages WHERE deleted = FALSE"
   );
-  res.send(allMessages.rows);
+  return res.send(allMessages.rows);
 });
 
 // Check for login session
@@ -20,7 +20,9 @@ router.use((req, res, next) => {
     next();
   } else {
     console.log("not logged in");
-    res.status(401).json({ message: "You don't have access to this feature" });
+    return res
+      .status(401)
+      .json({ message: "You don't have access to this feature" });
   }
 });
 
@@ -33,7 +35,9 @@ router.post("/write", async (req, res) => {
       "INSERT INTO messages (uname, messages, deleted, edited) VALUES($1, $2, FALSE, FALSE)",
       [username, message]
     );
-    res.status(201).json({ message: "Post has been created successfully" });
+    return res
+      .status(201)
+      .json({ message: "Post has been created successfully" });
   } catch (err) {
     console.log(err.message);
   }
@@ -56,7 +60,9 @@ router.post("/reply/:mid", async (req, res) => {
       "INSERT INTO replies (mid, uname, messages, deleted) VALUES($1, $2, $3, FALSE)",
       [mid, username, message]
     );
-    res.status(201).json({ message: "Reply has been created successfully" });
+    return res
+      .status(201)
+      .json({ message: "Reply has been created successfully" });
   } catch (err) {
     console.log(err.message);
   }
@@ -74,12 +80,14 @@ router.get("/delete/:mid", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
     if (req.session.user.username != muser.rows[0].uname) {
-      res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     } else {
       await pool.query("UPDATE messages SET deleted = TRUE WHERE mid = $1", [
         mid,
       ]);
-      res.status(201).json({ message: "Post has been deleted successfully" });
+      return res
+        .status(201)
+        .json({ message: "Post has been deleted successfully" });
     }
   } catch (err) {
     console.log(err.message);
@@ -97,16 +105,55 @@ router.get("/reply/delete/:rid", async (req, res) => {
     console.log(ruser.rows[0].uname);
     console.log(req.session.user.username);
     if (req.session.user.username != ruser.rows[0].uname) {
-      res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Unauthorized" });
     } else {
       await pool.query("UPDATE replies SET deleted = TRUE WHERE repid = $1", [
         rid,
       ]);
-      res.status(201).json({ message: "Reply has been deleted successfully" });
+      return res
+        .status(201)
+        .json({ message: "Reply has been deleted successfully" });
     }
   } catch (err) {
     console.log(err.message);
   }
 });
 
+router.post("/edit/:mid", async (req, res) => {
+  try {
+    const { mid } = req.params;
+    console.log(mid);
+    const muser = await pool.query(
+      "SELECT uname, deleted, edited, messages, created_at  FROM messages WHERE mid = $1",
+      [mid]
+    );
+    console.log(muser.rows[0]);
+    if (
+      muser.rows.length == 0 ||
+      muser.rows[0].deleted ||
+      muser.rows[0].edited ||
+      req.session.user.username != muser.rows[0].uname
+    ) {
+      return res.status(401).json({ message: "Unauthorized" });
+    } else {
+      await pool.query(
+        "INSERT INTO messages (uname, created_at, messages, edited, newmid) VALUES($1, $2, $3, TRUE, $4)",
+        [
+          muser.rows[0].uname,
+          muser.rows[0].created_at,
+          muser.rows[0].messages,
+          mid,
+        ]
+      );
+      const { message } = req.body;
+      await pool.query(
+        "UPDATE messages SET messages = $1, created_at = current_timestamp WHERE mid = $2",
+        [message, mid]
+      );
+      return res.status(201).json({ message: "Post successfully edited" });
+    }
+  } catch (err) {
+    console.log(err.message);
+  }
+});
 module.exports = router;
