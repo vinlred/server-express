@@ -47,9 +47,9 @@ router.get("/:mid", async (req, res) => {
     const checkmes = await pool.query("SELECT * FROM messages WHERE mid = $1", [
       mid,
     ]);
-    if (checkmes.rows.length == 0) {
+    if (checkmes.rows.length == 0 || checkmes.rows[0].deleted) {
       console.log("Posts not found");
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: "Post not found" });
     }
     const curmes = await pool.query(
       "SELECT uname, created_at, messages FROM messages WHERE mid = $1 AND deleted = FALSE AND edited = FALSE",
