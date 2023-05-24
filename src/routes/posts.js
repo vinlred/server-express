@@ -156,4 +156,20 @@ router.post('/edit/:mid', async (req, res) => {
     console.log(err.message);
   }
 });
+
+// Get all of user's messages by user session
+router.get('/mine', async (req, res) => {
+  try {
+    const { username } = req.session.user;
+    const allMessages = await pool.query(
+      'SELECT * FROM messages WHERE uname=$1 AND deleted = FALSE AND edited = FALSE',
+      [username]
+    );
+    res.send(allMessages.rows);
+    // res.status(201).json({ message: 'Post has been created successfully' });
+  } catch (err) {
+    console.log(err.message);
+  }
+});
+
 module.exports = router;
