@@ -30,3 +30,9 @@ Content-Type: application/json
 {
   "message" : "lololossss"
 }
+
+### GET ALL MESSAGE
+GET http://localhost:8080/api/posts/
+
+### GET REPLY BY MID
+GET http://localhost:8080/api/posts/reply/7

@@ -33,6 +33,7 @@ router.post('/login', async (req, res) => {
           username,
         };
         req.session.cookie.maxAge = 3600000 * 5;
+        console.log(req.session);
         // res.send(req.session);
         return res.status(202).json({ message: 'Logged In' });
       }
