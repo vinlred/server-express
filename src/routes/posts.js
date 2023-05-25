@@ -5,14 +5,6 @@ const router = Router();
 const pool = require('./db');
 const session = require('express-session');
 
-// Get all message API
-router.get('/', async (req, res) => {
-  const allMessages = await pool.query(
-    'SELECT * FROM messages WHERE deleted = FALSE AND edited = FALSE'
-  );
-  return res.send(allMessages.rows);
-});
-
 // Check for login session
 router.use((req, res, next) => {
   if (req.session.user) {
@@ -24,6 +16,14 @@ router.use((req, res, next) => {
       .status(401)
       .json({ message: "You don't have access to this feature" });
   }
+});
+
+// Get all message API
+router.get('/', async (req, res) => {
+  const allMessages = await pool.query(
+    'SELECT * FROM messages WHERE deleted = FALSE AND edited = FALSE'
+  );
+  return res.send(allMessages.rows);
 });
 
 // Get all of user's messages by user session
