@@ -90,6 +90,21 @@ router.get('/', async (req, res) => {
 });
 
 // Get user based on username
+router.get('/mine', async (req, res) => {
+  console.log('this is for accessing user page');
+  const { username } = req.session.user;
+
+  const cekuser = await pool.query('SELECT * FROM users WHERE uname = $1', [
+    username,
+  ]);
+  if (cekuser.rows.length == 0) {
+    return res.status(403).json({ message: 'User does not exist' });
+  }
+
+  res.send(cekuser.rows[0]);
+});
+
+// Get user based on username
 router.get('/:userid', async (req, res) => {
   console.log('this is for accessing user page');
   const username = req.params;
